@@ -3,373 +3,336 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>건설 프로젝트 공정 비교 및 EVM 대시보드</title>
+    <title>EVM Performance & Schedule Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600;700&display=swap');
+
         :root {
-            --main-color: #1a237e;
-            --bg-color: #f4f7f9;
-            --card-bg: #ffffff;
-            --green: #4caf50;
-            --yellow: #ffeb3b;
-            --red: #f44336;
-            --text-color: #333;
+            --editor-bg: #ffffff;
+            --sidebar-bg: #f8f9fa;
+            --border-color: #e1e4e8;
+            --text-main: #24292e;
+            --text-muted: #586069;
+            --accent-blue: #1a237e;
+            --accent-green: #28a745;
+            --accent-red: #d73a49;
+            --code-bg: #f6f8fa;
         }
 
         body {
-            font-family: 'Pretendard', -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'Inter', -apple-system, sans-serif;
             margin: 0;
             padding: 0;
+            color: var(--text-main);
+            background-color: var(--editor-bg);
+            line-height: 1.6;
         }
 
-        header {
-            background-color: var(--main-color);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .header-container {
+            width: 100%;
+            margin-bottom: 30px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+        .header-container img {
+            width: 100%;
+            display: block;
         }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        .main-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 40px 100px 40px;
         }
 
-        .card-full {
-            grid-column: span 2;
+        .section {
+            margin-bottom: 50px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 30px;
         }
 
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: var(--main-color);
-            border-bottom: 2px solid var(--bg-color);
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 20px;
             padding-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .input-group {
+        /* 마크다운 스타일 텍스트 포맷팅 */
+        .content-bold { font-weight: 700; }
+        .content-italic { font-style: italic; }
+        
+        blockquote {
+            margin: 20px 0;
+            padding: 10px 20px;
+            color: var(--text-muted);
+            border-left: 4px solid var(--border-color);
+            background: var(--code-bg);
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: var(--code-bg);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        /* 테이블 디자인 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--sidebar-bg);
+            font-weight: 600;
+        }
+
+        /* 입력 폼 및 컨트롤 */
+        .controls {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            background: var(--sidebar-bg);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
         }
 
         .input-item label {
             display: block;
-            font-size: 0.85rem;
-            margin-bottom: 5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
         }
 
-        .input-item input, .input-item select {
+        input[type="number"], input[type="file"], select {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
             box-sizing: border-box;
         }
 
-        .file-upload-area {
-            border: 2px dashed #ccc;
-            padding: 20px;
-            text-align: center;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            transition: 0.3s;
-        }
-
-        .file-upload-area:hover {
-            border-color: var(--main-color);
-            background: #e8eaf6;
-        }
-
-        .btn-group {
-            grid-column: span 2;
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        button {
-            padding: 10px 20px;
+        .btn {
+            background-color: var(--accent-blue);
+            color: white;
             border: none;
-            border-radius: 4px;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-weight: 600;
             cursor: pointer;
-            font-weight: bold;
+            transition: opacity 0.2s;
         }
 
-        .btn-primary { background-color: var(--main-color); color: white; }
-        .btn-secondary { background-color: #607d8b; color: white; }
+        .btn:hover { opacity: 0.9; }
 
-        .metric-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+        .chart-area {
+            height: 400px;
+            margin: 30px 0;
         }
 
-        .metric-item {
-            padding: 10px;
-            border-radius: 4px;
-            background: #f9f9f9;
-            text-align: center;
+        /* 리스트 스타일 */
+        .task-list {
+            list-style: none;
+            padding: 0;
         }
 
-        .metric-value {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-top: 5px;
+        .task-list-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
-        .status-badge {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            vertical-align: middle;
-            margin-right: 8px;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 350px;
-            width: 100%;
-        }
+        .task-list-item input { margin-right: 10px; }
 
         @media print {
-            .btn-group, .input-group, .file-upload-area, header button { display: none; }
-            .container { display: block; }
-            .card { margin-bottom: 20px; page-break-inside: avoid; }
-        }
-
-        @media (max-width: 768px) {
-            .container { grid-template-columns: 1fr; }
-            .card-full { grid-column: span 1; }
+            .header-container, .controls, .btn { display: none; }
         }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>건설 프로젝트 EVM & 공정 비교 대시보드</h1>
-    <button onclick="window.print()" class="btn-secondary" style="position:absolute; right:20px; top:25px;">인쇄</button>
-</header>
+<div class="header-container">
+    <img src="https://capsule-render.vercel.app/api?type=waving&color=1a237e&height=250&section=header&text=EVM%20Project%20Dashboard&fontSize=70&fontColor=ffffff&animation=fadeIn" alt="Header">
+</div>
 
-<div class="container">
-    <div class="card">
-        <div class="card-title">공정표(CSV) 업로드 및 설정</div>
-        <div class="file-upload-area">
-            <p style="font-size: 0.9rem; color: #666;">공정표 CSV 파일을 업로드하세요.<br>(형식: 시점,계획,실적,투입원가)</p>
-            <input type="file" id="csvFileInput" accept=".csv" style="margin-top: 10px;">
-        </div>
-        <div class="input-group">
+<div class="main-wrapper">
+    <div class="section">
+        <div class="section-title">프로젝트 분석 개요</div>
+        <blockquote>
+            이 페이지는 건설 프로젝트의 공정 관리와 원가 성과를 분석하기 위한 도구입니다. 
+            <code>CSV</code> 파일을 업로드하여 현재 공사 상태를 실시간으로 검증할 수 있습니다.
+        </blockquote>
+        
+        <div class="controls">
             <div class="input-item">
-                <label>프로젝트명</label>
-                <input type="text" id="projName" value="2026-건설공사-01">
+                <label>데이터 업로드 (CSV)</label>
+                <input type="file" id="csvUpload" accept=".csv">
             </div>
             <div class="input-item">
-                <label>총 예산(BAC, 억원)</label>
-                <input type="number" id="bac" value="100">
+                <label>총 사업비 (BAC, 억원)</label>
+                <input type="number" id="bacInput" value="100">
             </div>
-        </div>
-        <div class="btn-group">
-            <button class="btn-primary" onclick="processCSV()">데이터 분석 업데이트</button>
-            <button class="btn-secondary" onclick="loadDefaultData()">기본 샘플 로드</button>
+            <div style="display: flex; align-items: flex-end;">
+                <button class="btn" onclick="processData()">성과 분석 실행</button>
+            </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-title">현재 성과 지표 (EVM)</div>
-        <div class="metric-grid">
-            <div class="metric-item">
-                <label>SV (일정차이)</label>
-                <div id="svVal" class="metric-value">0</div>
-            </div>
-            <div class="metric-item">
-                <label>SPI (일정수행지수)</label>
-                <div id="spiVal" class="metric-value">0</div>
-            </div>
-            <div class="metric-item">
-                <label>CV (원가차이)</label>
-                <div id="cvVal" class="metric-value">0</div>
-            </div>
-            <div class="metric-item">
-                <label>CPI (원가수행지수)</label>
-                <div id="cpiVal" class="metric-value">0</div>
-            </div>
-        </div>
-        <div id="diagnosisBox" style="margin-top:15px; padding:10px; border-radius:5px; background:#f0f2f5;">
-            <span id="statusLight" class="status-badge" style="background:#ccc;"></span>
-            <span id="statusText" style="font-weight:bold;">파일을 업로드하거나 샘플을 로드하세요.</span>
+    <div class="section">
+        <div class="section-title">성과 지표 요약</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>항목</th>
+                    <th>현재 수치</th>
+                    <th>상태 지표</th>
+                    <th>비고</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>일정수행지수 (SPI)</td>
+                    <td id="spiVal">-</td>
+                    <td id="spiStatus">-</td>
+                    <td>1.0 이상 양호</td>
+                </tr>
+                <tr>
+                    <td>원가수행지수 (CPI)</td>
+                    <td id="cpiVal">-</td>
+                    <td id="cpiStatus">-</td>
+                    <td>1.0 이상 양호</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">S-Curve 시각화 비교</div>
+        <div class="chart-area">
+            <canvas id="evmChart"></canvas>
         </div>
     </div>
 
-    <div class="card card-full">
-        <div class="card-title">공정표 대비 실적 비교 (S-Curve)</div>
-        <div class="chart-container">
-            <canvas id="sCurveChart"></canvas>
-        </div>
+    <div class="section">
+        <div class="section-title">프로젝트 체크리스트</div>
+        <ul class="task-list">
+            <li class="task-list-item"><input type="checkbox" checked disabled> 프로젝트 기본 정보 입력</li>
+            <li class="task-list-item"><input type="checkbox" checked disabled> 공정표 데이터 연동</li>
+            <li class="task-list-item"><input type="checkbox" id="check3"> 성과 차이 분석 및 조치 계획 수립</li>
+            <li class="task-list-item"><input type="checkbox" id="check4"> 완료시 추정치(EAC) 검토</li>
+        </ul>
     </div>
 
-    <div class="card card-full">
-        <div class="card-title">공기/원가 예측 및 비교 데이터</div>
-        <div class="metric-grid" style="grid-template-columns: repeat(4, 1fr);">
-            <div class="metric-item"><label>EAC (완료시추정)</label><div id="eacVal" class="metric-value">0</div></div>
-            <div class="metric-item"><label>ETC (잔여추정)</label><div id="etcVal" class="metric-value">0</div></div>
-            <div class="metric-item"><label>VAC (완료시차이)</label><div id="vacVal" class="metric-value">0</div></div>
-            <div class="metric-item"><label>TCPI (달성필요지수)</label><div id="tcpiVal" class="metric-value">0</div></div>
-        </div>
+    <div class="section" style="border: none;">
+        <div class="section-title">수식 가이드</div>
+        <p>성과 분석에는 다음의 표준 수식이 사용되었습니다:</p>
+        <ul>
+            <li><span class="content-bold">SPI</span> = EV / PV</li>
+            <li><span class="content-bold">CPI</span> = EV / AC</li>
+            <li><span class="content-bold">EAC</span> = BAC / CPI</li>
+        </ul>
     </div>
 </div>
 
 <script>
-    let sCurveChart;
-    let projectData = {
-        labels: [],
-        pv: [],
-        ev: [],
-        ac: []
-    };
+    let mainChart;
 
     function initChart() {
-        const ctx = document.getElementById('sCurveChart').getContext('2d');
-        sCurveChart = new Chart(ctx, {
+        const ctx = document.getElementById('evmChart').getContext('2d');
+        mainChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%'],
+                labels: ['1Q', '2Q', '3Q', '4Q'],
                 datasets: [
-                    { label: '계획(Plan)', borderColor: '#1a237e', borderDash: [5, 5], data: [], fill: false },
-                    { label: '실적(Earned)', borderColor: '#4caf50', data: [], fill: false, tension: 0.1 },
-                    { label: '투입(Actual)', borderColor: '#f44336', data: [], fill: false, tension: 0.1 }
+                    { label: 'PV (계획)', data: [20, 45, 75, 100], borderColor: '#1a237e', borderDash: [5, 5], fill: false },
+                    { label: 'EV (실적)', data: [15, 38, 65, null], borderColor: '#28a745', fill: false },
+                    { label: 'AC (투입)', data: [18, 42, 70, null], borderColor: '#d73a49', fill: false }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
                 scales: {
-                    y: { beginAtZero: true, title: { display: true, text: '가치 (억원)' } },
-                    x: { title: { display: true, text: '공기 진행률 / 시점' } }
+                    y: { beginAtZero: true, title: { display: true, text: '억원' } }
                 }
             }
         });
     }
 
-    // CSV 처리 로직
-    function processCSV() {
-        const fileInput = document.getElementById('csvFileInput');
-        const file = fileInput.files[0];
-        
-        if (!file) {
-            alert("CSV 파일을 먼저 선택해주세요.");
-            return;
+    function processData() {
+        const fileInput = document.getElementById('csvUpload');
+        const bac = parseFloat(document.getElementById('bacInput').value);
+
+        if (fileInput.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lines = e.target.result.split('\n');
+                const labels = [];
+                const pv = [];
+                const ev = [];
+                const ac = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = lines[i].split(',');
+                    if (cols.length >= 4) {
+                        labels.push(cols[0].trim());
+                        pv.push(parseFloat(cols[1]));
+                        ev.push(parseFloat(cols[2]));
+                        ac.push(parseFloat(cols[3]));
+                    }
+                }
+
+                updateDashboard(labels, pv, ev, ac, bac);
+            };
+            reader.readAsText(fileInput.files[0]);
+        } else {
+            // 샘플 데이터 기반 업데이트
+            updateDashboard(['1Q', '2Q', '3Q', '4Q'], [20, 45, 75, 100], [15, 38, 65, null], [18, 42, 70, null], bac);
         }
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result;
-            parseCSVData(text);
-        };
-        reader.readAsText(file);
     }
 
-    function parseCSVData(csvText) {
-        const lines = csvText.split('\n');
-        projectData = { labels: [], pv: [], ev: [], ac: [] };
+    function updateDashboard(labels, pv, ev, ac, bac) {
+        mainChart.data.labels = labels;
+        mainChart.data.datasets[0].data = pv;
+        mainChart.data.datasets[1].data = ev;
+        mainChart.data.datasets[2].data = ac;
+        mainChart.update();
 
-        for (let i = 1; i < lines.length; i++) {
-            const cols = lines[i].split(',');
-            if (cols.length >= 4) {
-                projectData.labels.push(cols[0].trim());
-                projectData.pv.push(parseFloat(cols[1]));
-                projectData.ev.push(parseFloat(cols[2]));
-                projectData.ac.push(parseFloat(cols[3]));
-            }
-        }
-        updateDashboard();
-    }
+        const lastIdx = ev.filter(x => x !== null).length - 1;
+        if (lastIdx >= 0) {
+            const spi = ev[lastIdx] / pv[lastIdx];
+            const cpi = ev[lastIdx] / ac[lastIdx];
 
-    function loadDefaultData() {
-        projectData = {
-            labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
-            pv: [10, 25, 40, 60, 80, 100],
-            ev: [8, 20, 35, 52, null, null],
-            ac: [12, 24, 42, 58, null, null]
-        };
-        updateDashboard();
-    }
-
-    function updateDashboard() {
-        // 차트 업데이트
-        sCurveChart.data.labels = projectData.labels;
-        sCurveChart.data.datasets[0].data = projectData.pv;
-        sCurveChart.data.datasets[1].data = projectData.ev;
-        sCurveChart.data.datasets[2].data = projectData.ac;
-        sCurveChart.update();
-
-        // 마지막 데이터 기반 EVM 계산
-        const validEV = projectData.ev.filter(v => v !== null);
-        const currentIndex = validEV.length - 1;
-        
-        if (currentIndex >= 0) {
-            const pv = projectData.pv[currentIndex];
-            const ev = projectData.ev[currentIndex];
-            const ac = projectData.ac[currentIndex];
-            const bac = parseFloat(document.getElementById('bac').value);
-
-            const sv = ev - pv;
-            const spi = ev / pv;
-            const cv = ev - ac;
-            const cpi = ev / ac;
-            
-            const eac = bac / cpi;
-            const etc = eac - ac;
-            const vac = bac - eac;
-            const tcpi = (bac - ev) / (bac - ac);
-
-            // UI 반영
-            document.getElementById('svVal').innerText = sv.toFixed(2);
             document.getElementById('spiVal').innerText = spi.toFixed(2);
-            document.getElementById('cvVal').innerText = cv.toFixed(2);
             document.getElementById('cpiVal').innerText = cpi.toFixed(2);
             
-            document.getElementById('eacVal').innerText = eac.toFixed(2);
-            document.getElementById('etcVal').innerText = etc.toFixed(2);
-            document.getElementById('vacVal').innerText = vac.toFixed(2);
-            document.getElementById('tcpiVal').innerText = tcpi.toFixed(2);
-
-            updateStatus(spi, cpi);
+            updateStatusText('spiStatus', spi);
+            updateStatusText('cpiStatus', cpi);
         }
     }
 
-    function updateStatus(spi, cpi) {
-        const light = document.getElementById('statusLight');
-        const text = document.getElementById('statusText');
-
-        if (spi >= 1 && cpi >= 1) {
-            light.style.background = '#4caf50';
-            text.innerText = "진단 결과: 공정 및 비용 모두 정상";
-        } else if (spi < 1 && cpi < 1) {
-            light.style.background = '#f44336';
-            text.innerText = "진단 결과: 공정 지연 및 비용 초과 (위험)";
+    function updateStatusText(id, val) {
+        const el = document.getElementById(id);
+        if (val >= 1) {
+            el.innerText = "양호";
+            el.style.color = "#28a745";
+        } else if (val >= 0.8) {
+            el.innerText = "주의";
+            el.style.color = "#e3b341";
         } else {
-            light.style.background = '#ffeb3b';
-            text.innerText = "진단 결과: 주의 관리 필요";
+            el.innerText = "지연/초과";
+            el.style.color = "#d73a49";
         }
     }
 
