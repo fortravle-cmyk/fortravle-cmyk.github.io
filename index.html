@@ -3,340 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EVM Performance & Schedule Dashboard</title>
+    <title>Construction Management Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
         :root {
-            --editor-bg: #ffffff;
-            --sidebar-bg: #f8f9fa;
-            --border-color: #e1e4e8;
-            --text-main: #24292e;
-            --text-muted: #586069;
-            --accent-blue: #1a237e;
-            --accent-green: #28a745;
-            --accent-red: #d73a49;
-            --code-bg: #f6f8fa;
+            --primary-navy: #1a237e;
+            --accent-blue: #3949ab;
+            --success-green: #2e7d32;
+            --warning-orange: #f57c00;
+            --danger-red: #c62828;
+            --light-bg: #fdfdfd;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --border-light: #eceff1;
         }
 
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             margin: 0;
             padding: 0;
-            color: var(--text-main);
-            background-color: var(--editor-bg);
-            line-height: 1.6;
+            background-color: #f4f7f6;
+            color: #2c3e50;
         }
 
-        .header-container {
-            width: 100%;
-            margin-bottom: 30px;
-        }
-
-        .header-container img {
+        .header-banner {
             width: 100%;
             display: block;
         }
 
-        .main-wrapper {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 40px 100px 40px;
+        .main-container {
+            max-width: 1100px;
+            margin: -60px auto 60px;
+            padding: 0 20px;
+            position: relative;
         }
 
-        .section {
-            margin-bottom: 50px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 30px;
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border-light);
         }
 
-        .section-title {
-            font-size: 1.75rem;
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .title-label {
+            font-size: 1.25rem;
             font-weight: 700;
+            color: var(--primary-navy);
             margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
         }
 
-        /* 마크다운 스타일 텍스트 포맷팅 */
-        .content-bold { font-weight: 700; }
-        .content-italic { font-style: italic; }
-        
-        blockquote {
-            margin: 20px 0;
-            padding: 10px 20px;
-            color: var(--text-muted);
-            border-left: 4px solid var(--border-color);
-            background: var(--code-bg);
+        .title-label::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--accent-blue);
+            margin-right: 12px;
+            border-radius: 2px;
         }
 
-        code {
-            font-family: 'Fira Code', monospace;
-            background-color: var(--code-bg);
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-size: 0.9em;
+        /* 컨트롤 영역 */
+        .input-box {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        /* 테이블 디자인 */
+        .input-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .field {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .btn-action {
+            background: var(--primary-navy);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            background: var(--accent-blue);
+        }
+
+        /* 분석 테이블 */
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        th, td {
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            text-align: left;
+            border-collapse: separate;
+            border-spacing: 0;
         }
 
         th {
-            background-color: var(--sidebar-bg);
-            font-weight: 600;
+            background: #f1f5f9;
+            padding: 15px;
+            text-align: left;
+            font-size: 0.85rem;
+            color: #475569;
+            border-bottom: 2px solid var(--border-light);
         }
 
-        /* 입력 폼 및 컨트롤 */
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            background: var(--sidebar-bg);
-            padding: 25px;
-            border-radius: 8px;
-            margin-bottom: 30px;
+        td {
+            padding: 20px 15px;
+            border-bottom: 1px solid var(--border-light);
         }
 
-        .input-item label {
-            display: block;
-            font-weight: 600;
+        .status-pill {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* 알림 메시지 영역 */
+        .advice-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .advice-title {
+            font-weight: 700;
             margin-bottom: 8px;
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
 
-        input[type="number"], input[type="file"], select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            box-sizing: border-box;
+        .advice-text {
+            font-size: 0.95rem;
+            color: #475569;
         }
 
-        .btn {
-            background-color: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 5px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s;
+        .chart-wrap {
+            height: 350px;
         }
 
-        .btn:hover { opacity: 0.9; }
-
-        .chart-area {
-            height: 400px;
-            margin: 30px 0;
-        }
-
-        /* 리스트 스타일 */
-        .task-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .task-list-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .task-list-item input { margin-right: 10px; }
-
-        @media print {
-            .header-container, .controls, .btn { display: none; }
+        @media (max-width: 850px) {
+            .grid-layout { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-<div class="header-container">
-    <img src="https://capsule-render.vercel.app/api?type=waving&color=1a237e&height=250&section=header&text=EVM%20Project%20Dashboard&fontSize=70&fontColor=ffffff&animation=fadeIn" alt="Header">
-</div>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=1a237e&height=280&section=header&text=Construction%20Management%20Dashboard&fontSize=50&fontColor=ffffff&animation=fadeIn" class="header-banner">
 
-<div class="main-wrapper">
-    <div class="section">
-        <div class="section-title">프로젝트 분석 개요</div>
-        <blockquote>
-            이 페이지는 건설 프로젝트의 공정 관리와 원가 성과를 분석하기 위한 도구입니다. 
-            <code>CSV</code> 파일을 업로드하여 현재 공사 상태를 실시간으로 검증할 수 있습니다.
-        </blockquote>
-        
-        <div class="controls">
-            <div class="input-item">
-                <label>데이터 업로드 (CSV)</label>
-                <input type="file" id="csvUpload" accept=".csv">
+<div class="main-container">
+    <div class="grid-layout">
+        <div class="card">
+            <div class="title-label">Project Configuration</div>
+            <div class="input-box">
+                <div class="field">
+                    <label>Upload Schedule Data (CSV)</label>
+                    <input type="file" id="csvFile" accept=".csv">
+                </div>
+                <div class="input-row">
+                    <div class="field">
+                        <label>Total Budget (BAC, 100M KRW)</label>
+                        <input type="number" id="bac" value="100">
+                    </div>
+                </div>
+                <button class="btn-action" onclick="runAnalysis()">Analyze Performance</button>
             </div>
-            <div class="input-item">
-                <label>총 사업비 (BAC, 억원)</label>
-                <input type="number" id="bacInput" value="100">
+            
+            <div id="adviceContainer" class="advice-box">
+                <div class="advice-title" id="advTitle">시스템 준비 완료</div>
+                <div class="advice-text" id="advText">공정표 파일을 업로드하거나 분석 버튼을 눌러 프로젝트 상태를 진단하세요.</div>
             </div>
-            <div style="display: flex; align-items: flex-end;">
-                <button class="btn" onclick="processData()">성과 분석 실행</button>
+        </div>
+
+        <div class="card">
+            <div class="title-label">Performance Metrics</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Schedule (SPI)</td>
+                        <td id="spiVal" style="font-weight: 700;">-</td>
+                        <td><span id="spiBadge" class="status-pill">Wait</span></td>
+                    </tr>
+                    <tr>
+                        <td>Cost (CPI)</td>
+                        <td id="cpiVal" style="font-weight: 700;">-</td>
+                        <td><span id="cpiBadge" class="status-pill">Wait</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="margin-top: 25px; font-size: 0.9rem;">
+                <strong>Estimate at Completion (EAC):</strong> <span id="eacVal" style="color: var(--accent-blue); font-weight: 700;">-</span> 억원
             </div>
         </div>
     </div>
 
-    <div class="section">
-        <div class="section-title">성과 지표 요약</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>항목</th>
-                    <th>현재 수치</th>
-                    <th>상태 지표</th>
-                    <th>비고</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>일정수행지수 (SPI)</td>
-                    <td id="spiVal">-</td>
-                    <td id="spiStatus">-</td>
-                    <td>1.0 이상 양호</td>
-                </tr>
-                <tr>
-                    <td>원가수행지수 (CPI)</td>
-                    <td id="cpiVal">-</td>
-                    <td id="cpiStatus">-</td>
-                    <td>1.0 이상 양호</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="section">
-        <div class="section-title">S-Curve 시각화 비교</div>
-        <div class="chart-area">
-            <canvas id="evmChart"></canvas>
+    <div class="card">
+        <div class="title-label">Project S-Curve Analysis</div>
+        <div class="chart-wrap">
+            <canvas id="sCurve"></canvas>
         </div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">프로젝트 체크리스트</div>
-        <ul class="task-list">
-            <li class="task-list-item"><input type="checkbox" checked disabled> 프로젝트 기본 정보 입력</li>
-            <li class="task-list-item"><input type="checkbox" checked disabled> 공정표 데이터 연동</li>
-            <li class="task-list-item"><input type="checkbox" id="check3"> 성과 차이 분석 및 조치 계획 수립</li>
-            <li class="task-list-item"><input type="checkbox" id="check4"> 완료시 추정치(EAC) 검토</li>
-        </ul>
-    </div>
-
-    <div class="section" style="border: none;">
-        <div class="section-title">수식 가이드</div>
-        <p>성과 분석에는 다음의 표준 수식이 사용되었습니다:</p>
-        <ul>
-            <li><span class="content-bold">SPI</span> = EV / PV</li>
-            <li><span class="content-bold">CPI</span> = EV / AC</li>
-            <li><span class="content-bold">EAC</span> = BAC / CPI</li>
-        </ul>
     </div>
 </div>
 
 <script>
-    let mainChart;
+    let chartObj;
 
-    function initChart() {
-        const ctx = document.getElementById('evmChart').getContext('2d');
-        mainChart = new Chart(ctx, {
+    function init() {
+        const ctx = document.getElementById('sCurve').getContext('2d');
+        chartObj = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['1Q', '2Q', '3Q', '4Q'],
+                labels: ['Start', '25%', '50%', '75%', 'Finish'],
                 datasets: [
-                    { label: 'PV (계획)', data: [20, 45, 75, 100], borderColor: '#1a237e', borderDash: [5, 5], fill: false },
-                    { label: 'EV (실적)', data: [15, 38, 65, null], borderColor: '#28a745', fill: false },
-                    { label: 'AC (투입)', data: [18, 42, 70, null], borderColor: '#d73a49', fill: false }
+                    { label: 'Planned (PV)', data: [0, 25, 50, 75, 100], borderColor: '#94a3b8', borderDash: [5, 5], fill: false },
+                    { label: 'Earned (EV)', data: [0, 20, 42, null, null], borderColor: '#2e7d32', borderWidth: 3, fill: false },
+                    { label: 'Actual (AC)', data: [0, 28, 48, null, null], borderColor: '#c62828', borderWidth: 3, fill: false }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true, title: { display: true, text: '억원' } }
-                }
+                plugins: { legend: { position: 'bottom' } }
             }
         });
     }
 
-    function processData() {
-        const fileInput = document.getElementById('csvUpload');
-        const bac = parseFloat(document.getElementById('bacInput').value);
+    function runAnalysis() {
+        const file = document.getElementById('csvFile').files[0];
+        const bac = parseFloat(document.getElementById('bac').value);
 
-        if (fileInput.files.length > 0) {
+        if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const lines = e.target.result.split('\n');
-                const labels = [];
-                const pv = [];
-                const ev = [];
-                const ac = [];
-
-                for (let i = 1; i < lines.length; i++) {
-                    const cols = lines[i].split(',');
+                const rows = e.target.result.split('\n').slice(1);
+                const labels = [], pv = [], ev = [], ac = [];
+                rows.forEach(row => {
+                    const cols = row.split(',');
                     if (cols.length >= 4) {
-                        labels.push(cols[0].trim());
+                        labels.push(cols[0]);
                         pv.push(parseFloat(cols[1]));
                         ev.push(parseFloat(cols[2]));
                         ac.push(parseFloat(cols[3]));
                     }
-                }
-
-                updateDashboard(labels, pv, ev, ac, bac);
+                });
+                updateUI(labels, pv, ev, ac, bac);
             };
-            reader.readAsText(fileInput.files[0]);
+            reader.readAsText(file);
         } else {
-            // 샘플 데이터 기반 업데이트
-            updateDashboard(['1Q', '2Q', '3Q', '4Q'], [20, 45, 75, 100], [15, 38, 65, null], [18, 42, 70, null], bac);
+            // Default Sample Data
+            updateUI(['1Q', '2Q', '3Q', '4Q'], [25, 50, 75, 100], [20, 42, null, null], [28, 48, null, null], bac);
         }
     }
 
-    function updateDashboard(labels, pv, ev, ac, bac) {
-        mainChart.data.labels = labels;
-        mainChart.data.datasets[0].data = pv;
-        mainChart.data.datasets[1].data = ev;
-        mainChart.data.datasets[2].data = ac;
-        mainChart.update();
+    function updateUI(labels, pv, ev, ac, bac) {
+        chartObj.data.labels = labels;
+        chartObj.data.datasets[0].data = pv;
+        chartObj.data.datasets[1].data = ev;
+        chartObj.data.datasets[2].data = ac;
+        chartObj.update();
 
-        const lastIdx = ev.filter(x => x !== null).length - 1;
-        if (lastIdx >= 0) {
-            const spi = ev[lastIdx] / pv[lastIdx];
-            const cpi = ev[lastIdx] / ac[lastIdx];
+        const lastIdx = ev.filter(v => v !== null).length - 1;
+        const s = ev[lastIdx] / pv[lastIdx];
+        const c = ev[lastIdx] / ac[lastIdx];
 
-            document.getElementById('spiVal').innerText = spi.toFixed(2);
-            document.getElementById('cpiVal').innerText = cpi.toFixed(2);
-            
-            updateStatusText('spiStatus', spi);
-            updateStatusText('cpiStatus', cpi);
-        }
+        document.getElementById('spiVal').innerText = s.toFixed(2);
+        document.getElementById('cpiVal').innerText = c.toFixed(2);
+        document.getElementById('eacVal').innerText = (bac / c).toFixed(1);
+
+        applyStatus('spiBadge', s);
+        applyStatus('cpiBadge', c);
+        generateAdvice(s, c);
     }
 
-    function updateStatusText(id, val) {
+    function applyStatus(id, val) {
         const el = document.getElementById(id);
-        if (val >= 1) {
-            el.innerText = "양호";
-            el.style.color = "#28a745";
-        } else if (val >= 0.8) {
-            el.innerText = "주의";
-            el.style.color = "#e3b341";
+        if (val >= 1.0) {
+            el.innerText = "Excellent";
+            el.style.background = "#e8f5e9";
+            el.style.color = "#2e7d32";
+        } else if (val >= 0.85) {
+            el.innerText = "Caution";
+            el.style.background = "#fff3e0";
+            el.style.color = "#ef6c00";
         } else {
-            el.innerText = "지연/초과";
-            el.style.color = "#d73a49";
+            el.innerText = "Critical";
+            el.style.background = "#ffebee";
+            el.style.color = "#c62828";
         }
     }
 
-    window.onload = initChart;
+    function generateAdvice(spi, cpi) {
+        const box = document.getElementById('adviceContainer');
+        const title = document.getElementById('advTitle');
+        const text = document.getElementById('advText');
+
+        if (spi < 1.0 && cpi < 1.0) {
+            box.style.borderColor = "var(--danger-red)";
+            title.innerText = "⚠️ 긴급 관리 필요 (Critical Status)";
+            text.innerText = "일정 지연과 비용 초과가 동시에 발생하고 있습니다. 주공정(Critical Path)을 재점검하고, 불필요한 현장 낭비 요소를 즉시 차단하세요. 필요시 자원 투입 계획을 전면 수정해야 합니다.";
+        } else if (spi < 1.0) {
+            box.style.borderColor = "var(--warning-orange)";
+            title.innerText = "📅 일정 회복 집중 (Schedule Recovery)";
+            text.innerText = "원가 효율은 양호하나 일정이 늦어지고 있습니다. 돌발 공사(Crashing)나 병행 시공(Fast Tracking)을 검토하여 기준 종료일을 준수할 수 있도록 조치하세요.";
+        } else if (cpi < 1.0) {
+            box.style.borderColor = "var(--warning-orange)";
+            title.innerText = "💰 원가 절감 대책 (Cost Control)";
+            text.innerText = "일정은 빠르나 예산이 과다 투입되고 있습니다. 노무비 효율과 자재 손실률을 점검하세요. 현재 추세라면 완료 시점 예산(EAC)이 원래 계획을 크게 상회할 위험이 있습니다.";
+        } else {
+            box.style.borderColor = "var(--success-green)";
+            title.innerText = "✅ 프로젝트 정상 진행 (Good Progress)";
+            text.innerText = "현재 모든 지표가 안정적입니다. 지금의 생산성을 유지하면서 향후 발생 가능한 리스크(날씨, 자재 수급 등)에 대비한 예방적 관리에 집중하세요.";
+        }
+    }
+
+    window.onload = init;
 </script>
 
 </body>
