@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Construction Management Dashboard</title>
+    <title>Construction Management & Performance Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
         :root {
             --primary-navy: #1a237e;
@@ -14,23 +14,17 @@
             --success-green: #2e7d32;
             --warning-orange: #f57c00;
             --danger-red: #c62828;
-            --light-bg: #fdfdfd;
-            --card-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            --border-light: #eceff1;
+            --bg-light: #f1f5f9;
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: #f4f7f6;
-            color: #2c3e50;
+            background-color: var(--bg-light);
+            color: #1e293b;
         }
 
-        .header-banner {
-            width: 100%;
-            display: block;
-        }
+        .header-banner { width: 100%; display: block; }
 
         .main-container {
             max-width: 1100px;
@@ -42,238 +36,198 @@
         .card {
             background: white;
             border-radius: 16px;
-            padding: 30px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 30px;
-            border: 1px solid var(--border-light);
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
         }
 
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-        }
-
-        .title-label {
-            font-size: 1.25rem;
+        .section-title {
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--primary-navy);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
         }
 
-        .title-label::before {
+        .section-title::before {
             content: '';
             width: 4px;
-            height: 20px;
+            height: 18px;
             background: var(--accent-blue);
-            margin-right: 12px;
+            margin-right: 10px;
             border-radius: 2px;
         }
 
-        /* 컨트롤 영역 */
-        .input-box {
+        /* 날씨 섹션 */
+        .weather-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .weather-card {
             background: #f8fafc;
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            text-align: center;
         }
 
-        .input-row {
-            display: flex;
-            gap: 15px;
-        }
+        .weather-label { font-size: 0.8rem; color: #64748b; display: block; }
+        .weather-val { font-size: 1.2rem; font-weight: 700; color: var(--accent-blue); }
 
-        .field {
-            flex: 1;
-        }
+        /* 입력 및 테이블 */
+        .grid-box { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .input-item { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
+        input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
 
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #64748b;
-            margin-bottom: 6px;
-        }
-
-        input {
+        .btn-run {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-
-        .btn-action {
+            padding: 14px;
             background: var(--primary-navy);
             color: white;
             border: none;
-            padding: 14px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: 0.2s;
         }
 
-        .btn-action:hover {
-            transform: translateY(-2px);
-            background: var(--accent-blue);
-        }
+        .btn-run:hover { background: var(--accent-blue); }
 
-        /* 분석 테이블 */
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; font-size: 0.8rem; color: #64748b; padding-bottom: 10px; border-bottom: 2px solid #f1f5f9; }
+        td { padding: 15px 0; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
 
-        th {
-            background: #f1f5f9;
-            padding: 15px;
-            text-align: left;
-            font-size: 0.85rem;
-            color: #475569;
-            border-bottom: 2px solid var(--border-light);
-        }
-
-        td {
-            padding: 20px 15px;
-            border-bottom: 1px solid var(--border-light);
-        }
-
-        .status-pill {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        /* 알림 메시지 영역 */
+        /* 상태 조언 박스 */
         .advice-box {
-            margin-top: 20px;
             padding: 20px;
             border-radius: 12px;
-            border-left: 5px solid #cbd5e1;
             background: #f8fafc;
-        }
-
-        .advice-title {
-            font-weight: 700;
-            margin-bottom: 8px;
-            font-size: 1rem;
-        }
-
-        .advice-text {
+            border-left: 5px solid #cbd5e1;
             font-size: 0.95rem;
-            color: #475569;
+            line-height: 1.6;
         }
 
-        .chart-wrap {
-            height: 350px;
-        }
+        .chart-container { height: 350px; margin-top: 20px; }
 
-        @media (max-width: 850px) {
-            .grid-layout { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 850px) { .grid-box { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=1a237e&height=280&section=header&text=Construction%20Management%20Dashboard&fontSize=50&fontColor=ffffff&animation=fadeIn" class="header-banner">
+<img src="https://capsule-render.vercel.app/api?type=waving&color=1a237e&height=280&section=header&text=Construction%20Management%20%26%20Performance&fontSize=40&fontColor=ffffff&animation=fadeIn" class="header-banner">
 
 <div class="main-container">
-    <div class="grid-layout">
+    <div class="card">
+        <div class="section-title">Live Field Environment (Seoul)</div>
+        <div class="weather-info">
+            <div class="weather-card"><span class="weather-label">Temperature</span><span id="temp" class="weather-val">--°C</span></div>
+            <div class="weather-card"><span class="weather-label">Conditions</span><span id="cond" class="weather-val">Loading..</span></div>
+            <div class="weather-card"><span class="weather-label">Workability</span><span id="work" class="weather-val">Checking..</span></div>
+        </div>
+        <div id="weatherAdvice" class="advice-box" style="display:none; background:#fff9db; border-color:#fcc419;"></div>
+    </div>
+
+    <div class="grid-box">
         <div class="card">
-            <div class="title-label">Project Configuration</div>
-            <div class="input-box">
-                <div class="field">
-                    <label>Upload Schedule Data (CSV)</label>
-                    <input type="file" id="csvFile" accept=".csv">
-                </div>
-                <div class="input-row">
-                    <div class="field">
-                        <label>Total Budget (BAC, 100M KRW)</label>
-                        <input type="number" id="bac" value="100">
-                    </div>
-                </div>
-                <button class="btn-action" onclick="runAnalysis()">Analyze Performance</button>
+            <div class="section-title">Analysis Configuration</div>
+            <div class="input-item">
+                <label>Upload Performance Data (CSV)</label>
+                <input type="file" id="csvFileInput">
             </div>
-            
-            <div id="adviceContainer" class="advice-box">
-                <div class="advice-title" id="advTitle">시스템 준비 완료</div>
-                <div class="advice-text" id="advText">공정표 파일을 업로드하거나 분석 버튼을 눌러 프로젝트 상태를 진단하세요.</div>
+            <div class="input-item">
+                <label>Total Budget (BAC, 100M KRW)</label>
+                <input type="number" id="bac" value="100">
             </div>
+            <button class="btn-run" onclick="handleAnalysis()">Run Performance Analysis</button>
         </div>
 
         <div class="card">
-            <div class="title-label">Performance Metrics</div>
+            <div class="section-title">Current Performance Metrics</div>
             <table>
-                <thead>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Value</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Metric</th><th style="text-align:right;">Value</th></tr></thead>
                 <tbody>
-                    <tr>
-                        <td>Schedule (SPI)</td>
-                        <td id="spiVal" style="font-weight: 700;">-</td>
-                        <td><span id="spiBadge" class="status-pill">Wait</span></td>
-                    </tr>
-                    <tr>
-                        <td>Cost (CPI)</td>
-                        <td id="cpiVal" style="font-weight: 700;">-</td>
-                        <td><span id="cpiBadge" class="status-pill">Wait</span></td>
-                    </tr>
+                    <tr><td>Schedule Index (SPI)</td><td id="spiVal" style="text-align:right;">-</td></tr>
+                    <tr><td>Cost Index (CPI)</td><td id="cpiVal" style="text-align:right;">-</td></tr>
+                    <tr><td>Completion Estimate (EAC)</td><td id="eacVal" style="text-align:right; color:var(--accent-blue);">-</td></tr>
                 </tbody>
             </table>
-            <div style="margin-top: 25px; font-size: 0.9rem;">
-                <strong>Estimate at Completion (EAC):</strong> <span id="eacVal" style="color: var(--accent-blue); font-weight: 700;">-</span> 억원
-            </div>
         </div>
     </div>
 
     <div class="card">
-        <div class="title-label">Project S-Curve Analysis</div>
-        <div class="chart-wrap">
-            <canvas id="sCurve"></canvas>
+        <div class="section-title">Management Advice & Action Items</div>
+        <div id="mainAdvice" class="advice-box">
+            데이터를 업로드하거나 분석 버튼을 눌러 프로젝트 상태 진단을 시작하세요.
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title">Project S-Curve Analysis</div>
+        <div class="chart-container">
+            <canvas id="sCurveChart"></canvas>
         </div>
     </div>
 </div>
 
 <script>
-    let chartObj;
+    let sCurveChart;
 
-    function init() {
-        const ctx = document.getElementById('sCurve').getContext('2d');
-        chartObj = new Chart(ctx, {
+    // 실시간 날씨 연동 (Open-Meteo API)
+    async function updateWeather() {
+        try {
+            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current_weather=true');
+            const data = await res.json();
+            const { temperature, weathercode } = data.current_weather;
+
+            document.getElementById('temp').innerText = `${temperature}°C`;
+            
+            let condText = "Clear", workText = "Good", advice = "";
+            if (weathercode >= 51) {
+                condText = "Rain/Snow"; workText = "Restricted";
+                advice = "⚠️ 강수/강설이 감지되었습니다. 실외 고소 작업 및 콘크리트 타설 공정을 재검토하고 안전 사고에 유의하세요.";
+            } else if (temperature > 33) {
+                condText = "Extreme Heat"; workText = "Caution";
+                advice = "🔥 폭염 조건입니다. 현장 근로자의 휴식 시간을 강제하고 온열질환 방지 대책을 시행하세요.";
+            } else {
+                advice = "☀️ 현재 기상 조건은 공정 수행에 적합합니다.";
+            }
+
+            document.getElementById('cond').innerText = condText;
+            document.getElementById('work').innerText = workText;
+            const wBox = document.getElementById('weatherAdvice');
+            wBox.innerText = advice;
+            wBox.style.display = 'block';
+        } catch (e) { console.error("Weather data failed"); }
+    }
+
+    // 차트 초기화
+    function initChart() {
+        const ctx = document.getElementById('sCurveChart').getContext('2d');
+        sCurveChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: ['Start', '25%', '50%', '75%', 'Finish'],
                 datasets: [
-                    { label: 'Planned (PV)', data: [0, 25, 50, 75, 100], borderColor: '#94a3b8', borderDash: [5, 5], fill: false },
-                    { label: 'Earned (EV)', data: [0, 20, 42, null, null], borderColor: '#2e7d32', borderWidth: 3, fill: false },
-                    { label: 'Actual (AC)', data: [0, 28, 48, null, null], borderColor: '#c62828', borderWidth: 3, fill: false }
+                    { label: 'Planned (PV)', data: [0, 25, 50, 75, 100], borderColor: '#cbd5e1', borderDash: [5, 5], fill: false },
+                    { label: 'Earned (EV)', data: [0, 20, 42], borderColor: '#2e7d32', fill: false, borderWidth: 3 },
+                    { label: 'Actual (AC)', data: [0, 28, 48], borderColor: '#c62828', fill: false, borderWidth: 3 }
                 ]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
+            options: { responsive: true, maintainAspectRatio: false }
         });
     }
 
-    function runAnalysis() {
-        const file = document.getElementById('csvFile').files[0];
+    // 분석 실행
+    function handleAnalysis() {
+        const fileInput = document.getElementById('csvFileInput');
         const bac = parseFloat(document.getElementById('bac').value);
 
-        if (file) {
+        if (fileInput.files.length > 0) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const rows = e.target.result.split('\n').slice(1);
@@ -287,77 +241,48 @@
                         ac.push(parseFloat(cols[3]));
                     }
                 });
-                updateUI(labels, pv, ev, ac, bac);
+                renderResults(labels, pv, ev, ac, bac);
             };
-            reader.readAsText(file);
+            reader.readAsText(fileInput.files[0]);
         } else {
-            // Default Sample Data
-            updateUI(['1Q', '2Q', '3Q', '4Q'], [25, 50, 75, 100], [20, 42, null, null], [28, 48, null, null], bac);
+            // 샘플 데이터 실행
+            renderResults(['1Q', '2Q', '3Q', '4Q'], [25, 50, 75, 100], [20, 42, null, null], [28, 48, null, null], bac);
         }
     }
 
-    function updateUI(labels, pv, ev, ac, bac) {
-        chartObj.data.labels = labels;
-        chartObj.data.datasets[0].data = pv;
-        chartObj.data.datasets[1].data = ev;
-        chartObj.data.datasets[2].data = ac;
-        chartObj.update();
+    function renderResults(labels, pv, ev, ac, bac) {
+        sCurveChart.data.labels = labels;
+        sCurveChart.data.datasets[0].data = pv;
+        sCurveChart.data.datasets[1].data = ev;
+        sCurveChart.data.datasets[2].data = ac;
+        sCurveChart.update();
 
         const lastIdx = ev.filter(v => v !== null).length - 1;
-        const s = ev[lastIdx] / pv[lastIdx];
-        const c = ev[lastIdx] / ac[lastIdx];
+        const spi = ev[lastIdx] / pv[lastIdx];
+        const cpi = ev[lastIdx] / ac[lastIdx];
+        const eac = bac / cpi;
 
-        document.getElementById('spiVal').innerText = s.toFixed(2);
-        document.getElementById('cpiVal').innerText = c.toFixed(2);
-        document.getElementById('eacVal').innerText = (bac / c).toFixed(1);
+        document.getElementById('spiVal').innerText = spi.toFixed(2);
+        document.getElementById('cpiVal').innerText = cpi.toFixed(2);
+        document.getElementById('eacVal').innerText = eac.toFixed(1);
 
-        applyStatus('spiBadge', s);
-        applyStatus('cpiBadge', c);
-        generateAdvice(s, c);
-    }
-
-    function applyStatus(id, val) {
-        const el = document.getElementById(id);
-        if (val >= 1.0) {
-            el.innerText = "Excellent";
-            el.style.background = "#e8f5e9";
-            el.style.color = "#2e7d32";
-        } else if (val >= 0.85) {
-            el.innerText = "Caution";
-            el.style.background = "#fff3e0";
-            el.style.color = "#ef6c00";
+        const advBox = document.getElementById('mainAdvice');
+        if (spi < 1 && cpi < 1) {
+            advBox.innerText = "🚨 경고: 현재 프로젝트는 일정 지연과 예산 초과가 동시에 발생하고 있습니다. 주공정(Critical Path) 인력 추가 배치를 고려하고, 현장 비용 누수 지점을 즉시 점검하십시오.";
+            advBox.style.borderColor = "var(--danger-red)";
+        } else if (spi < 1) {
+            advBox.innerText = "📅 일정 주의: 원가 효율은 양호하나 계획보다 진행이 늦습니다. 장비 가동률을 높이거나 병행 시공법을 도입하여 공기를 단축해야 합니다.";
+            advBox.style.borderColor = "var(--warning-orange)";
         } else {
-            el.innerText = "Critical";
-            el.style.background = "#ffebee";
-            el.style.color = "#c62828";
+            advBox.innerText = "✅ 양호: 프로젝트가 계획 범위 내에서 안정적으로 수행되고 있습니다. 현재의 생산성을 유지하십시오.";
+            advBox.style.borderColor = "var(--success-green)";
         }
     }
 
-    function generateAdvice(spi, cpi) {
-        const box = document.getElementById('adviceContainer');
-        const title = document.getElementById('advTitle');
-        const text = document.getElementById('advText');
-
-        if (spi < 1.0 && cpi < 1.0) {
-            box.style.borderColor = "var(--danger-red)";
-            title.innerText = "⚠️ 긴급 관리 필요 (Critical Status)";
-            text.innerText = "일정 지연과 비용 초과가 동시에 발생하고 있습니다. 주공정(Critical Path)을 재점검하고, 불필요한 현장 낭비 요소를 즉시 차단하세요. 필요시 자원 투입 계획을 전면 수정해야 합니다.";
-        } else if (spi < 1.0) {
-            box.style.borderColor = "var(--warning-orange)";
-            title.innerText = "📅 일정 회복 집중 (Schedule Recovery)";
-            text.innerText = "원가 효율은 양호하나 일정이 늦어지고 있습니다. 돌발 공사(Crashing)나 병행 시공(Fast Tracking)을 검토하여 기준 종료일을 준수할 수 있도록 조치하세요.";
-        } else if (cpi < 1.0) {
-            box.style.borderColor = "var(--warning-orange)";
-            title.innerText = "💰 원가 절감 대책 (Cost Control)";
-            text.innerText = "일정은 빠르나 예산이 과다 투입되고 있습니다. 노무비 효율과 자재 손실률을 점검하세요. 현재 추세라면 완료 시점 예산(EAC)이 원래 계획을 크게 상회할 위험이 있습니다.";
-        } else {
-            box.style.borderColor = "var(--success-green)";
-            title.innerText = "✅ 프로젝트 정상 진행 (Good Progress)";
-            text.innerText = "현재 모든 지표가 안정적입니다. 지금의 생산성을 유지하면서 향후 발생 가능한 리스크(날씨, 자재 수급 등)에 대비한 예방적 관리에 집중하세요.";
-        }
-    }
-
-    window.onload = init;
+    window.onload = () => {
+        updateWeather();
+        initChart();
+    };
 </script>
 
 </body>
