@@ -231,6 +231,7 @@
       padding: 12px 0;
       border-bottom: 1px solid #f1f5f9;
       font-size: 0.92rem;
+      vertical-align: top;
     }
 
     .metric-value {
@@ -263,6 +264,28 @@
 
     .chart-wrap {
       height: 320px;
+    }
+
+    .analysis-summary-box {
+      margin-top: 16px;
+      background: var(--soft-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .analysis-summary-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+
+    .analysis-summary-text {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: var(--text-main);
+      white-space: pre-line;
     }
 
     @media (max-width: 950px) {
@@ -372,6 +395,11 @@
           </tr>
         </table>
         <div id="metricStatus" class="status-badge">Sample metrics loaded</div>
+
+        <div class="analysis-summary-box">
+          <div class="analysis-summary-title">AI Interpretation</div>
+          <div id="analysisSummary" class="analysis-summary-text">분석 대기 중입니다. Analyze & Sync AI를 눌러주세요.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -475,6 +503,7 @@
       const eac = document.getElementById('eac').innerText;
       const temp = document.getElementById('temp').innerText;
       const work = document.getElementById('work').innerText;
+      const analysisSummary = document.getElementById('analysisSummary').innerText;
 
       if (q.includes('spi')) {
         return `SPI는 Schedule Performance Index의 약자이며, 계획 대비 실제 진도를 의미합니다. 현재 SPI는 ${spi}입니다. 1.00 미만이면 공정 지연 가능성을 시사합니다.`;
@@ -492,6 +521,10 @@
         return `현재 서울 현장 기준 외부 환경은 ${temp}, 작업 가능 상태는 ${work}로 표시됩니다. 기상 조건이 나쁘면 외장, 양중, 고소작업은 별도 검토가 필요합니다.`;
       }
 
+      if (q.includes('상황') || q.includes('분석') || q.includes('해석')) {
+        return `현재 자동 해석 결과는 다음과 같습니다.\n\n${analysisSummary}`;
+      }
+
       if (q.includes('fidic')) {
         return `FIDIC Silver Book 기준으로는 Employer's Representative의 권한 범위와 지시의 효력이 계약문서 해석에서 중요합니다. 발표용이라면 권한 위임의 범위, 독립성, 책임 귀속 문제를 함께 비판적으로 볼 수 있습니다.`;
       }
@@ -500,7 +533,7 @@
         return `공정 지연이 발생했다면 우선 Critical Path 상의 활동인지 확인하고, 병목 공종·자원 재배치·병행 시공 가능성·추가 투입 비용을 함께 검토하는 것이 좋습니다.`;
       }
 
-      return `현재 대시보드는 공정 성과지표와 기상 조건을 기반으로 응답합니다. 예를 들어 "SPI가 뭐야?", "현재 날씨 어때?", "지연 시 대응은?"처럼 질문하면 됩니다.`;
+      return `현재 대시보드는 공정 성과지표와 기상 조건을 기반으로 응답합니다. 예를 들어 "SPI가 뭐야?", "현재 날씨 어때?", "현재 상황 분석해줘"처럼 질문하면 됩니다.`;
     }
 
     function renderChart(rows) {
@@ -602,6 +635,56 @@
       return { spi, cpi, eac };
     }
 
+    function generateAnalysisSummary(spi, cpi, eac, bac) {
+      let scheduleText = '';
+      let costText = '';
+      let eacText = '';
+      let actionText = '';
+
+      if (spi >= 1.0) {
+        scheduleText = `공정 측면에서는 SPI가 ${spi.toFixed(2)}로, 현재 계획 대비 정상 또는 선행 상태입니다.`;
+      } else if (spi >= 0.95) {
+        scheduleText = `공정 측면에서는 SPI가 ${spi.toFixed(2)}로, 계획 대비 소폭 지연 상태입니다.`;
+      } else if (spi >= 0.85) {
+        const delayRate = ((1 - spi) * 100).toFixed(1);
+        scheduleText = `공정 측면에서는 SPI가 ${spi.toFixed(2)}로, 계획 대비 약 ${delayRate}% 지연된 상태로 해석할 수 있습니다.`;
+      } else {
+        const delayRate = ((1 - spi) * 100).toFixed(1);
+        scheduleText = `공정 측면에서는 SPI가 ${spi.toFixed(2)}로 매우 낮아, 계획 대비 약 ${delayRate}% 수준의 뚜렷한 지연 위험이 있습니다.`;
+      }
+
+      if (cpi >= 1.0) {
+        costText = `원가 측면에서는 CPI가 ${cpi.toFixed(2)}로, 현재 비용 투입 대비 성과가 양호합니다.`;
+      } else if (cpi >= 0.95) {
+        costText = `원가 측면에서는 CPI가 ${cpi.toFixed(2)}로, 예산 효율이 다소 낮아지고 있어 주의가 필요합니다.`;
+      } else if (cpi >= 0.85) {
+        costText = `원가 측면에서는 CPI가 ${cpi.toFixed(2)}로, 비용 효율 저하가 관찰되며 예산 초과 가능성을 점검해야 합니다.`;
+      } else {
+        costText = `원가 측면에서는 CPI가 ${cpi.toFixed(2)}로 낮아, 비용 통제가 충분하지 않으며 예산 초과 위험이 큽니다.`;
+      }
+
+      const variance = eac - bac;
+      if (variance > 0) {
+        eacText = `현재 추정 최종사업비(EAC)는 ${eac.toFixed(2)}이며, 기준 예산(BAC) ${bac.toFixed(2)} 대비 약 ${variance.toFixed(2)} 초과할 가능성이 있습니다.`;
+      } else if (variance < 0) {
+        eacText = `현재 추정 최종사업비(EAC)는 ${eac.toFixed(2)}이며, 기준 예산(BAC) ${bac.toFixed(2)} 대비 약 ${Math.abs(variance).toFixed(2)} 절감 가능성이 있습니다.`;
+      } else {
+        eacText = `현재 추정 최종사업비(EAC)는 ${eac.toFixed(2)}로, 기준 예산(BAC)과 유사한 수준입니다.`;
+      }
+
+      if (spi < 0.9 && cpi < 0.9) {
+        actionText = `종합적으로 공정과 원가 모두 위험 신호가 있으므로, 핵심 공종의 병목 작업 재조정, 투입 자원 재배치, 지연 원인 공정의 집중 관리가 필요합니다.`;
+      } else if (spi < 0.9) {
+        actionText = `종합적으로는 공정 리스크가 더 크므로, Critical Path 상의 지연 공정과 선행 작업 간 간섭 여부를 우선 검토하는 것이 좋습니다.`;
+      } else if (cpi < 0.9) {
+        actionText = `종합적으로는 원가 리스크가 더 크므로, 생산성 저하 원인과 불필요한 비용 투입 항목을 우선 점검하는 것이 좋습니다.`;
+      } else {
+        actionText = `종합적으로는 현재 상태가 비교적 안정적이며, 기존 계획을 유지하되 주요 공정과 비용 추이를 지속적으로 모니터링하면 됩니다.`;
+      }
+
+      return `${scheduleText}\n\n${costText}\n\n${eacText}\n\n${actionText}`;
+    }
+
     function parseCSV(text) {
       const lines = text
         .split(/\r?\n/)
@@ -621,7 +704,7 @@
       const required = ['period', 'pv', 'ev', 'ac'];
       const missing = required.filter(key => !(key in headerMap));
       if (missing.length) {
-        throw new Error(`CSV must include columns: Period, PV, EV, AC`);
+        throw new Error('CSV must include columns: Period, PV, EV, AC');
       }
 
       const rows = lines.slice(1).map(line => {
@@ -651,11 +734,13 @@
           try {
             const rows = parseCSV(event.target.result);
             const { spi, cpi, eac } = computeMetrics(rows, bac);
+
             renderChart(rows);
             updateMetricUI(spi, cpi, eac, 'CSV analysis completed');
+            document.getElementById('analysisSummary').innerText = generateAnalysisSummary(spi, cpi, eac, bac);
 
             addMessage(
-              `CSV 분석이 완료되었습니다.\n현재 SPI는 ${spi.toFixed(2)}, CPI는 ${cpi.toFixed(2)}, EAC는 ${eac.toFixed(2)}입니다.`,
+              `CSV 분석이 완료되었습니다.\n현재 SPI는 ${spi.toFixed(2)}, CPI는 ${cpi.toFixed(2)}, EAC는 ${eac.toFixed(2)}입니다.\n오른쪽 AI Interpretation 영역에서 종합 해석을 확인하세요.`,
               'bot'
             );
           } catch (error) {
@@ -667,11 +752,13 @@
         reader.readAsText(fileInput.files[0], 'utf-8');
       } else {
         const { spi, cpi, eac } = computeMetrics(demoData, bac);
+
         renderChart(demoData);
         updateMetricUI(spi, cpi, eac, 'Sample analysis completed');
+        document.getElementById('analysisSummary').innerText = generateAnalysisSummary(spi, cpi, eac, bac);
 
         addMessage(
-          `샘플 데이터 기준 분석이 완료되었습니다.\n현재 SPI는 ${spi.toFixed(2)}, CPI는 ${cpi.toFixed(2)}, EAC는 ${eac.toFixed(2)}입니다.`,
+          `샘플 데이터 기준 분석이 완료되었습니다.\n현재 SPI는 ${spi.toFixed(2)}, CPI는 ${cpi.toFixed(2)}, EAC는 ${eac.toFixed(2)}입니다.\n오른쪽 AI Interpretation 영역에서 종합 해석을 확인하세요.`,
           'bot'
         );
       }
@@ -682,7 +769,9 @@
 
       const defaultBAC = safeNumber(document.getElementById('bac').value) || 100;
       const { spi, cpi, eac } = computeMetrics(demoData, defaultBAC);
+
       updateMetricUI(spi, cpi, eac, 'Sample metrics loaded');
+      document.getElementById('analysisSummary').innerText = generateAnalysisSummary(spi, cpi, eac, defaultBAC);
 
       fetchWeather();
     }
