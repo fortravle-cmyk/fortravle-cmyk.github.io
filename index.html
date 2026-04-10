@@ -1,217 +1,694 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Construction AI Intelligence Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Construction AI Intelligence Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-        :root {
-            --primary-navy: #1a237e;
-            --accent-blue: #3949ab;
-            --success-green: #2e7d32;
-            --warning-orange: #f57c00;
-            --danger-red: #c62828;
-            --bg-light: #f1f5f9;
-        }
+    :root {
+      --primary-navy: #1a237e;
+      --accent-blue: #3949ab;
+      --success-green: #2e7d32;
+      --warning-orange: #f57c00;
+      --danger-red: #c62828;
+      --bg-light: #f1f5f9;
+      --text-main: #1e293b;
+      --text-sub: #64748b;
+      --card-border: #e2e8f0;
+      --soft-bg: #f8fafc;
+    }
 
-        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-light); color: #1e293b; }
-        .header-banner { width: 100%; display: block; }
+    * {
+      box-sizing: border-box;
+    }
 
-        .main-container {
-            max-width: 1100px;
-            margin: -60px auto 60px;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 25px;
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background-color: var(--bg-light);
+      color: var(--text-main);
+    }
 
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-            border: 1px solid #e2e8f0;
-        }
+    .header-banner {
+      width: 100%;
+      display: block;
+    }
 
-        .section-title { font-size: 1.1rem; font-weight: 700; color: var(--primary-navy); margin-bottom: 15px; display: flex; align-items: center; }
-        .section-title::before { content: ''; width: 4px; height: 18px; background: var(--accent-blue); margin-right: 10px; border-radius: 2px; }
+    .main-container {
+      max-width: 1100px;
+      margin: -60px auto 60px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 350px;
+      gap: 25px;
+    }
 
-        /* 챗봇 스타일 */
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: 500px;
-        }
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            border: 1px solid #edf2f7;
-            border-radius: 12px;
-            padding: 15px;
-            background: #f8fafc;
-            margin-bottom: 15px;
-        }
-        .message { margin-bottom: 10px; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; max-width: 85%; }
-        .bot { background: var(--primary-navy); color: white; align-self: flex-start; }
-        .user { background: #e2e8f0; color: #1e293b; align-self: flex-end; margin-left: auto; }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      margin-bottom: 25px;
+      border: 1px solid var(--card-border);
+    }
 
-        .chat-input-group { display: flex; gap: 8px; }
-        .chat-input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; }
-        .btn-send { background: var(--accent-blue); color: white; border: none; padding: 0 15px; border-radius: 8px; cursor: pointer; }
+    .section-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--primary-navy);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
 
-        /* 날씨 및 데이터 레이아웃 */
-        .weather-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .weather-card { background: #f8fafc; padding: 10px; border-radius: 10px; text-align: center; font-size: 0.85rem; }
-        .weather-val { font-weight: 700; color: var(--accent-blue); display: block; }
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 18px;
+      background: var(--accent-blue);
+      margin-right: 10px;
+      border-radius: 2px;
+    }
 
-        .metric-table { width: 100%; border-collapse: collapse; }
-        .metric-table td { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+    .sub-note {
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      margin-top: -6px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
 
-        @media (max-width: 950px) {
-            .main-container { grid-template-columns: 1fr; }
-        }
-    </style>
+    .weather-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .weather-card {
+      background: var(--soft-bg);
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 0.85rem;
+      border: 1px solid #edf2f7;
+    }
+
+    .weather-label {
+      display: block;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .weather-val {
+      font-weight: 700;
+      color: var(--accent-blue);
+      display: block;
+      font-size: 1rem;
+      line-height: 1.25;
+      word-break: keep-all;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: block;
+      color: var(--text-main);
+    }
+
+    input[type="file"],
+    input[type="number"] {
+      width: 100%;
+      margin-top: 6px;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: white;
+      font: inherit;
+    }
+
+    .btn-primary,
+    .btn-send {
+      border: none;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary-navy);
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary:hover,
+    .btn-send:hover {
+      opacity: 0.92;
+    }
+
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 500px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid #edf2f7;
+      border-radius: 12px;
+      padding: 15px;
+      background: var(--soft-bg);
+      margin-bottom: 15px;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      max-width: 88%;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .bot {
+      background: var(--primary-navy);
+      color: white;
+      align-self: flex-start;
+    }
+
+    .user {
+      background: #e2e8f0;
+      color: var(--text-main);
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .chat-input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      outline: none;
+      font: inherit;
+    }
+
+    .btn-send {
+      background: var(--accent-blue);
+      color: white;
+      padding: 0 15px;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .metric-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .metric-table td {
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.92rem;
+    }
+
+    .metric-value {
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-top: 10px;
+      background: #eef2ff;
+      color: var(--accent-blue);
+    }
+
+    .status-good {
+      color: var(--success-green);
+    }
+
+    .status-warn {
+      color: var(--warning-orange);
+    }
+
+    .status-bad {
+      color: var(--danger-red);
+    }
+
+    .chart-wrap {
+      height: 320px;
+    }
+
+    @media (max-width: 950px) {
+      .main-container {
+        grid-template-columns: 1fr;
+      }
+
+      .analysis-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=1a237e&height=250&section=header&text=Construction%20AI%20Intelligence&fontSize=40&fontColor=ffffff" class="header-banner">
+  <img
+    src="https://capsule-render.vercel.app/api?type=waving&color=1a237e&height=250&section=header&text=Construction%20AI%20Intelligence&fontSize=40&fontColor=ffffff"
+    class="header-banner"
+    alt="Construction AI Intelligence Dashboard Header"
+  />
 
-<div class="main-container">
+  <div class="main-container">
     <div class="left-content">
-        <div class="card">
-            <div class="section-title">Live Field Environment (Seoul)</div>
-            <div class="weather-info">
-                <div class="weather-card">Temp<span id="temp" class="weather-val">--°C</span></div>
-                <div class="weather-card">Cond<span id="cond" class="weather-val">..</span></div>
-                <div class="weather-card">Work<span id="work" class="weather-val">..</span></div>
-            </div>
+
+      <div class="card">
+        <div class="section-title">Live Field Environment (Seoul)</div>
+        <div class="sub-note">서울 기준 외부 기상 정보를 불러와 작업 가능 상태를 간단히 표시함.</div>
+
+        <div class="weather-info">
+          <div class="weather-card">
+            <span class="weather-label">Temperature</span>
+            <span id="temp" class="weather-val">로딩 중...</span>
+          </div>
+          <div class="weather-card">
+            <span class="weather-label">Condition</span>
+            <span id="cond" class="weather-val">확인 중...</span>
+          </div>
+          <div class="weather-card">
+            <span class="weather-label">Workability</span>
+            <span id="work" class="weather-val">판단 중...</span>
+          </div>
+        </div>
+        <div id="weatherStatus" class="status-badge">Weather sync pending</div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Performance Analysis</div>
+        <div class="sub-note">
+          CSV 파일에 <strong>Period, PV, EV, AC</strong> 열이 있으면 자동으로 공정/원가 성과를 계산함.
+          파일이 없으면 기본 샘플 데이터로 시연 가능함.
         </div>
 
-        <div class="card">
-            <div class="section-title">Performance Analysis</div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
-                <div>
-                    <label style="font-size:0.8rem; font-weight:600;">Schedule Data (CSV)</label>
-                    <input type="file" id="csvFile" style="width:100%; margin-top:5px;">
-                </div>
-                <div>
-                    <label style="font-size:0.8rem; font-weight:600;">Budget (BAC)</label>
-                    <input type="number" id="bac" value="100" style="width:100%; margin-top:5px; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
-                </div>
-            </div>
-            <button onclick="runAnalysis()" style="width:100%; padding:12px; background:var(--primary-navy); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Analyze & Sync AI</button>
+        <div class="analysis-grid">
+          <div>
+            <label for="csvFile">Schedule Data (CSV)</label>
+            <input type="file" id="csvFile" accept=".csv" />
+          </div>
+          <div>
+            <label for="bac">Budget at Completion (BAC)</label>
+            <input type="number" id="bac" value="100" min="0" step="0.01" />
+          </div>
         </div>
 
-        <div class="card">
-            <div class="section-title">Project S-Curve</div>
-            <div style="height:300px;"><canvas id="chart"></canvas></div>
+        <button class="btn-primary" onclick="runAnalysis()">Analyze & Sync AI</button>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Project S-Curve</div>
+        <div class="chart-wrap">
+          <canvas id="chart"></canvas>
         </div>
+      </div>
     </div>
 
     <div class="right-content">
-        <div class="card chat-container">
-            <div class="section-title">CM AI Assistant</div>
-            <div class="chat-messages" id="chatMessages">
-                <div class="message bot">안녕하세요, 윤해인 님. 건설 현장 공정 관리 및 계약 자문을 돕는 AI 비서입니다. 궁금한 점을 물어보세요!</div>
-            </div>
-            <div class="chat-input-group">
-                <input type="text" id="chatInput" class="chat-input" placeholder="질문을 입력하세요..." onkeypress="if(event.keyCode==13) sendMessage()">
-                <button class="btn-send" onclick="sendMessage()">➤</button>
-            </div>
+      <div class="card chat-container">
+        <div class="section-title">CM AI Assistant</div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="message bot">안녕하세요, 윤해인 님. 건설 현장 공정 관리 및 계약 자문을 돕는 AI 비서입니다. SPI, CPI, EAC, 날씨, FIDIC, 지연 대응에 대해 질문해보세요.</div>
         </div>
+        <div class="chat-input-group">
+          <input
+            type="text"
+            id="chatInput"
+            class="chat-input"
+            placeholder="질문을 입력하세요..."
+            onkeypress="if(event.key === 'Enter') sendMessage()"
+          />
+          <button class="btn-send" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
 
-        <div class="card">
-            <div class="section-title">Performance Metrics</div>
-            <table class="metric-table">
-                <tr><td>SPI (Schedule)</td><td id="spi" style="text-align:right; font-weight:700;">-</td></tr>
-                <tr><td>CPI (Cost)</td><td id="cpi" style="text-align:right; font-weight:700;">-</td></tr>
-                <tr><td>EAC (Estimate)</td><td id="eac" style="text-align:right; font-weight:700; color:var(--accent-blue);">-</td></tr>
-            </table>
-        </div>
+      <div class="card">
+        <div class="section-title">Performance Metrics</div>
+        <table class="metric-table">
+          <tr>
+            <td>SPI (Schedule Performance Index)</td>
+            <td id="spi" class="metric-value">0.84</td>
+          </tr>
+          <tr>
+            <td>CPI (Cost Performance Index)</td>
+            <td id="cpi" class="metric-value">0.88</td>
+          </tr>
+          <tr>
+            <td>EAC (Estimate at Completion)</td>
+            <td id="eac" class="metric-value" style="color: var(--accent-blue);">113.64</td>
+          </tr>
+        </table>
+        <div id="metricStatus" class="status-badge">Sample metrics loaded</div>
+      </div>
     </div>
-</div>
+  </div>
 
-<script>
+  <script>
     let myChart;
 
-    // 실시간 날씨
-    async function fetchWeather() {
-        try {
-            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current_weather=true');
-            const data = await res.json();
-            document.getElementById('temp').innerText = `${data.current_weather.temperature}°C`;
-            document.getElementById('cond').innerText = data.current_weather.weathercode >= 51 ? "Rain" : "Clear";
-            document.getElementById('work').innerText = data.current_weather.weathercode >= 51 ? "Restricted" : "Good";
-        } catch(e) { console.error("Weather load fail"); }
+    const demoData = [
+      { Period: '1Q', PV: 25, EV: 20, AC: 28 },
+      { Period: '2Q', PV: 50, EV: 42, AC: 48 },
+      { Period: '3Q', PV: 75, EV: 68, AC: 74 },
+      { Period: '4Q', PV: 100, EV: 92, AC: 105 }
+    ];
+
+    function safeNumber(value) {
+      const num = Number(String(value).replace(/,/g, '').trim());
+      return Number.isFinite(num) ? num : 0;
     }
 
-    // AI 챗봇 메시지 전송 로직
-    function sendMessage() {
-        const input = document.getElementById('chatInput');
-        const text = input.value.trim();
-        if (!text) return;
+    function getWeatherTextFromCode(code) {
+      if (code === 0) return 'Clear';
+      if ([1, 2, 3].includes(code)) return 'Cloudy';
+      if ([45, 48].includes(code)) return 'Fog';
+      if ([51, 53, 55, 56, 57].includes(code)) return 'Drizzle';
+      if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return 'Rain';
+      if ([71, 73, 75, 77, 85, 86].includes(code)) return 'Snow';
+      if ([95, 96, 99].includes(code)) return 'Storm';
+      return 'Unknown';
+    }
 
-        addMessage(text, 'user');
-        input.value = '';
+    function getWorkability(condition) {
+      const bad = ['Rain', 'Snow', 'Storm', 'Fog'];
+      return bad.includes(condition) ? 'Restricted' : 'Good';
+    }
 
-        // 로딩 표시 후 답변 (시연용 규칙 기반 AI)
-        setTimeout(() => {
-            const response = generateAIResponse(text);
-            addMessage(response, 'bot');
-        }, 600);
+    async function fetchWeather() {
+      const tempEl = document.getElementById('temp');
+      const condEl = document.getElementById('cond');
+      const workEl = document.getElementById('work');
+      const statusEl = document.getElementById('weatherStatus');
+
+      try {
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current_weather=true');
+        if (!res.ok) throw new Error('Weather API response error');
+
+        const data = await res.json();
+        const current = data.current_weather;
+
+        if (!current || typeof current.temperature === 'undefined') {
+          throw new Error('Invalid weather payload');
+        }
+
+        const condition = getWeatherTextFromCode(current.weathercode);
+        const workability = getWorkability(condition);
+
+        tempEl.innerText = `${current.temperature}°C`;
+        condEl.innerText = condition;
+        workEl.innerText = workability;
+
+        statusEl.textContent = 'Weather sync completed';
+        statusEl.className = `status-badge ${workability === 'Good' ? 'status-good' : 'status-warn'}`;
+      } catch (e) {
+        tempEl.innerText = '18°C';
+        condEl.innerText = 'Unavailable';
+        workEl.innerText = 'Check manually';
+
+        statusEl.textContent = 'Weather API unavailable - fallback shown';
+        statusEl.className = 'status-badge status-warn';
+
+        console.error('Weather load fail:', e);
+      }
     }
 
     function addMessage(text, sender) {
-        const container = document.getElementById('chatMessages');
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${sender}`;
-        msgDiv.innerText = text;
-        container.appendChild(msgDiv);
-        container.scrollTop = container.scrollHeight;
+      const container = document.getElementById('chatMessages');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${sender}`;
+      msgDiv.innerText = text;
+      container.appendChild(msgDiv);
+      container.scrollTop = container.scrollHeight;
     }
 
-    // 시연용 AI 응답 로직 (실제 API 연동 시 이 부분을 fetch 코드로 교체)
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMessage(text, 'user');
+      input.value = '';
+
+      setTimeout(() => {
+        const response = generateAIResponse(text);
+        addMessage(response, 'bot');
+      }, 500);
+    }
+
     function generateAIResponse(query) {
-        if (query.includes('SPI')) return "SPI($Schedule\ Performance\ Index$)는 계획 대비 달성률을 의미합니다. 1.0 미만이면 공정 지연 상태이므로 자원 투입을 늘려야 합니다.";
-        if (query.includes('날씨')) return "현재 현장 날씨 정보에 따르면 " + document.getElementById('temp').innerText + "이며 공사 수행 환경은 " + document.getElementById('work').innerText + " 상태입니다.";
-        if (query.includes('FIDIC')) return "FIDIC Silver Book 기준, Employer's Representative는 시공자에게 지시를 내릴 권한이 있으며, 공기 연장(EOT)은 Clause 8.4에 따라 청구할 수 있습니다.";
-        if (query.includes('지연')) return "공정 지연이 발생했다면 Critical Path를 우선 분석하세요. 돌발 공사(Crashing)나 병행 시공(Fast Tracking) 검토가 필요합니다.";
-        
-        return "건설 공정 및 성과 관리와 관련하여 더 구체적인 질문을 해주시면 답변해 드리겠습니다. (예: SPI가 뭐야?, 오늘 날씨 어때?, FIDIC 규정 등)";
+      const q = query.toLowerCase();
+      const spi = document.getElementById('spi').innerText;
+      const cpi = document.getElementById('cpi').innerText;
+      const eac = document.getElementById('eac').innerText;
+      const temp = document.getElementById('temp').innerText;
+      const work = document.getElementById('work').innerText;
+
+      if (q.includes('spi')) {
+        return `SPI는 Schedule Performance Index의 약자이며, 계획 대비 실제 진도를 의미합니다. 현재 SPI는 ${spi}입니다. 1.00 미만이면 공정 지연 가능성을 시사합니다.`;
+      }
+
+      if (q.includes('cpi')) {
+        return `CPI는 Cost Performance Index의 약자이며, 투입 비용 대비 성과를 의미합니다. 현재 CPI는 ${cpi}입니다. 1.00 미만이면 비용 효율이 낮아지고 있음을 의미할 수 있습니다.`;
+      }
+
+      if (q.includes('eac')) {
+        return `EAC는 Estimate at Completion의 약자이며, 최종 예상 총사업비를 의미합니다. 현재 계산값은 ${eac}입니다.`;
+      }
+
+      if (q.includes('날씨') || q.includes('weather')) {
+        return `현재 서울 현장 기준 외부 환경은 ${temp}, 작업 가능 상태는 ${work}로 표시됩니다. 기상 조건이 나쁘면 외장, 양중, 고소작업은 별도 검토가 필요합니다.`;
+      }
+
+      if (q.includes('fidic')) {
+        return `FIDIC Silver Book 기준으로는 Employer's Representative의 권한 범위와 지시의 효력이 계약문서 해석에서 중요합니다. 발표용이라면 권한 위임의 범위, 독립성, 책임 귀속 문제를 함께 비판적으로 볼 수 있습니다.`;
+      }
+
+      if (q.includes('지연') || q.includes('delay')) {
+        return `공정 지연이 발생했다면 우선 Critical Path 상의 활동인지 확인하고, 병목 공종·자원 재배치·병행 시공 가능성·추가 투입 비용을 함께 검토하는 것이 좋습니다.`;
+      }
+
+      return `현재 대시보드는 공정 성과지표와 기상 조건을 기반으로 응답합니다. 예를 들어 "SPI가 뭐야?", "현재 날씨 어때?", "지연 시 대응은?"처럼 질문하면 됩니다.`;
     }
 
-    // 차트 및 분석 (이전 코드와 동일)
-    function init() {
-        const ctx = document.getElementById('chart').getContext('2d');
-        myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['1Q', '2Q', '3Q', '4Q'],
-                datasets: [
-                    { label: 'PV', data: [25, 50, 75, 100], borderColor: '#cbd5e1', borderDash: [5, 5], fill: false },
-                    { label: 'EV', data: [20, 42, null, null], borderColor: '#2e7d32', fill: false, borderWidth: 3 },
-                    { label: 'AC', data: [28, 48, null, null], borderColor: '#c62828', fill: false, borderWidth: 3 }
-                ]
+    function renderChart(rows) {
+      const labels = rows.map(row => row.Period);
+      const pv = rows.map(row => row.PV);
+      const ev = rows.map(row => row.EV);
+      const ac = rows.map(row => row.AC);
+
+      if (myChart) {
+        myChart.destroy();
+      }
+
+      const ctx = document.getElementById('chart').getContext('2d');
+      myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'PV',
+              data: pv,
+              borderColor: '#94a3b8',
+              borderDash: [6, 4],
+              fill: false,
+              tension: 0.25,
+              borderWidth: 2
             },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
+            {
+              label: 'EV',
+              data: ev,
+              borderColor: '#2e7d32',
+              fill: false,
+              tension: 0.25,
+              borderWidth: 3
+            },
+            {
+              label: 'AC',
+              data: ac,
+              borderColor: '#c62828',
+              fill: false,
+              tension: 0.25,
+              borderWidth: 3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    function updateMetricUI(spi, cpi, eac, sourceLabel = 'Analysis completed') {
+      document.getElementById('spi').innerText = spi.toFixed(2);
+      document.getElementById('cpi').innerText = cpi.toFixed(2);
+      document.getElementById('eac').innerText = eac.toFixed(2);
+
+      const statusEl = document.getElementById('metricStatus');
+      let statusClass = 'status-badge status-good';
+      let text = `${sourceLabel} · healthy`;
+
+      if (spi < 1 || cpi < 1) {
+        statusClass = 'status-badge status-warn';
+        text = `${sourceLabel} · caution`;
+      }
+      if (spi < 0.9 || cpi < 0.9) {
+        statusClass = 'status-badge status-bad';
+        text = `${sourceLabel} · action needed`;
+      }
+
+      statusEl.className = statusClass;
+      statusEl.textContent = text;
+    }
+
+    function computeMetrics(rows, bac) {
+      if (!rows.length) {
+        throw new Error('No rows available for analysis');
+      }
+
+      const last = rows[rows.length - 1];
+      const pv = safeNumber(last.PV);
+      const ev = safeNumber(last.EV);
+      const ac = safeNumber(last.AC);
+
+      const spi = pv === 0 ? 0 : ev / pv;
+      const cpi = ac === 0 ? 0 : ev / ac;
+      const eac = cpi === 0 ? 0 : bac / cpi;
+
+      return { spi, cpi, eac };
+    }
+
+    function parseCSV(text) {
+      const lines = text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
+
+      if (lines.length < 2) {
+        throw new Error('CSV file is empty or invalid.');
+      }
+
+      const headers = lines[0].split(',').map(h => h.trim());
+      const headerMap = {};
+      headers.forEach((h, i) => {
+        headerMap[h.toLowerCase()] = i;
+      });
+
+      const required = ['period', 'pv', 'ev', 'ac'];
+      const missing = required.filter(key => !(key in headerMap));
+      if (missing.length) {
+        throw new Error(`CSV must include columns: Period, PV, EV, AC`);
+      }
+
+      const rows = lines.slice(1).map(line => {
+        const cols = line.split(',').map(c => c.trim());
+        return {
+          Period: cols[headerMap['period']] ?? '',
+          PV: safeNumber(cols[headerMap['pv']]),
+          EV: safeNumber(cols[headerMap['ev']]),
+          AC: safeNumber(cols[headerMap['ac']])
+        };
+      }).filter(row => row.Period !== '');
+
+      if (!rows.length) {
+        throw new Error('No valid data rows were found in the CSV.');
+      }
+
+      return rows;
     }
 
     function runAnalysis() {
-        // 샘플 분석 결과 수치화
-        document.getElementById('spi').innerText = "0.84";
-        document.getElementById('cpi').innerText = "0.88";
-        document.getElementById('eac').innerText = "113.6";
-        addMessage("분석이 완료되었습니다. 현재 SPI가 0.84로 공정이 16% 지연되고 있습니다. 세부 조치 사항을 물어보세요.", "bot");
+      const fileInput = document.getElementById('csvFile');
+      const bac = safeNumber(document.getElementById('bac').value) || 100;
+
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          try {
+            const rows = parseCSV(event.target.result);
+            const { spi, cpi, eac } = computeMetrics(rows, bac);
+            renderChart(rows);
+            updateMetricUI(spi, cpi, eac, 'CSV analysis completed');
+
+            addMessage(
+              `CSV 분석이 완료되었습니다.\n현재 SPI는 ${spi.toFixed(2)}, CPI는 ${cpi.toFixed(2)}, EAC는 ${eac.toFixed(2)}입니다.`,
+              'bot'
+            );
+          } catch (error) {
+            console.error(error);
+            alert(error.message);
+            addMessage(`CSV 분석 중 오류가 발생했습니다: ${error.message}`, 'bot');
+          }
+        };
+        reader.readAsText(fileInput.files[0], 'utf-8');
+      } else {
+        const { spi, cpi, eac } = computeMetrics(demoData, bac);
+        renderChart(demoData);
+        updateMetricUI(spi, cpi, eac, 'Sample analysis completed');
+
+        addMessage(
+          `샘플 데이터 기준 분석이 완료되었습니다.\n현재 SPI는 ${spi.toFixed(2)}, CPI는 ${cpi.toFixed(2)}, EAC는 ${eac.toFixed(2)}입니다.`,
+          'bot'
+        );
+      }
     }
 
-    window.onload = () => { fetchWeather(); init(); };
-</script>
+    function initDashboard() {
+      renderChart(demoData);
+
+      const defaultBAC = safeNumber(document.getElementById('bac').value) || 100;
+      const { spi, cpi, eac } = computeMetrics(demoData, defaultBAC);
+      updateMetricUI(spi, cpi, eac, 'Sample metrics loaded');
+
+      fetchWeather();
+    }
+
+    window.onload = initDashboard;
+  </script>
 
 </body>
 </html>
